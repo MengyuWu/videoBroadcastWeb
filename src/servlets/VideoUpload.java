@@ -72,28 +72,30 @@ public class VideoUpload extends HttpServlet {
 		String tmpfileName=video.getName();
 		String bucketName=S3_BUCKET_NAME;
 		String type=(String) metadatas.get("type");
-		String s3FileName=createS3FileName( type,tmpfileName);
-		System.out.println("type: "+type+" s3FileName: "+s3FileName);
-		// store video in s3
-		S3.putObject(new PutObjectRequest(bucketName, s3FileName, video).withCannedAcl(CannedAccessControlList.PublicRead));
-		
 		String username=(String) metadatas.get("username");
 		String topic=(String)metadatas.get("topic");
 		String fileName=(String)metadatas.get("fileName");
 		if(type.equals(MAIN_TOPIC)){
 			// to avoid duplicate
-			topic=tmpfileName;
+			topic=tmpfileName.split("\\.")[0];
 		}
+		String s3FileName=createS3FileName( type,tmpfileName,topic);
+		System.out.println("type: "+type+" s3FileName: "+s3FileName);
+		// store video in s3
+		S3.putObject(new PutObjectRequest(bucketName, s3FileName, video).withCannedAcl(CannedAccessControlList.PublicRead));
+		
+		
+		
 		Video v=new Video(topic,type,fileName, username, s3FileName);
 		v.saveVideoToDynamoDB();
 	}
 	
-	protected String createS3FileName(String type, String fileName){
+	protected String createS3FileName(String type, String fileName, String topic){
 		String S3FileName="";
 		if(type.equals(MAIN_TOPIC)){
 			S3FileName=MAIN_TOPIC_PATH+fileName;
 		}else if(type.equals(FOLLOWING)){
-			S3FileName=FOLLOWING_PATH+fileName;
+			S3FileName=FOLLOWING_PATH+topic+"_"+fileName;
 		}
 		
 		return S3FileName;
