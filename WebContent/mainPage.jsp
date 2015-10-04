@@ -6,6 +6,8 @@
 <%@page import="com.amazonaws.services.s3.iterable.S3Objects"%>
 <%@page import="static servlets.VideoUpload.*"%>
 <%@page import="static com.amazon.videobroadcast.AWSResourceSetup.*" %>
+<%@page import="java.util.HashMap" %>
+<%@page import="com.amazonaws.services.dynamodbv2.model.*" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -38,8 +40,28 @@ UserName:<input type="text" name="username">
     	}
     	String topic=summaryKey.split("\\.")[0];
     	System.out.println("topic:"+topic);
-%>
+    	
+    	HashMap<String, Condition> scanFilter = new HashMap<String, Condition>();
+        Condition condition = new Condition()
+            .withComparisonOperator(ComparisonOperator.EQ.toString())
+            .withAttributeValueList(new AttributeValue().withS("topic"));
+        Condition condition2=new Condition()
+        		.withComparisonOperator(ComparisonOperator.EQ.toString())
+                .withAttributeValueList(new AttributeValue().withS(topic));
+        scanFilter.put("type", condition);
+        scanFilter.put("topic",condition2);
+        String tableName=DYNAMODB_TABLE_NAME;
+        ScanRequest scanRequest = new ScanRequest(tableName).withScanFilter(scanFilter);
+        ScanResult scanResult = DYNAMODB.scan(scanRequest);
+       
+        String createdBy=scanResult.getItems().get(0).get("createdBy").getS();
+        String creationTime=scanResult.getItems().get(0).get("creationTime").getS();
         
+        
+%>
+
+        CreatedBy: <%=createdBy%>  CreatedAt: <%=creationTime %>
+        <br>
         <div class="video-topic">
         <video id="example_video_1" class="video-js vjs-default-skin"
 		    controls preload="auto" width="400" height="300"
