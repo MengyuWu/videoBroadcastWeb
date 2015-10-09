@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<script>
+function checkCharCount(textfield){
+    if(textfield.value.length > 300) textfield.value = textfield.value.substr(0, 300);
+    document.getElementById("charCounter").innerHTML = 300 - textfield.value.length;
+}
+</script>
+
+<textarea class="input" name="REMARK" rows="5" cols="45" maxlength="300" wrap="virtual" onKeyUp="checkCharCount(this);"></textarea> 
+<div><span id="charCounter">300</span> characters left.</div> 
+</body>
+</html>
